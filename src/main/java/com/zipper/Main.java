@@ -10,27 +10,30 @@ import java.util.zip.ZipOutputStream;
 public class Main {
     public static void main(String[] args) {
 
-        System.out.println("Loading config");
+        log("Loading config", true);
 
         ConfigHandler config = new ConfigHandler();
 
         String input = config.GetSelectedInputPath();
         String output = config.GetSelectedOutputPath();
 
+        boolean debug = config.GetDebug();
+
         int maxFileSize = config.GetMaxFileSize();
 
-        System.out.println("Succesfully loaded config");
+        log("Succesfully loaded config", true);
 
-        System.out.println("Obtaining all files in input folder");
+        log("Obtaining all files in input folder", debug);
 
         java.io.File file = new java.io.File(input);
         ArrayList<File> files = FileReader.ListFilesForFolder(file);
 
-        System.out.println("Succesfully obtained all files in input folder");
+        log("Succesfully obtained all files in input folder", debug);
 
-        System.out.println("Sorting files into groups");
+        log("Sorting files into groups", debug);
 
         ArrayList<File> group = new ArrayList<>();
+        ArrayList<File> leftover = new ArrayList<>();
 
         int groupID = 0;
 
@@ -39,25 +42,28 @@ public class Main {
 
             long includedSize = size += fileEntry.GetFileSize();
 
-            System.out.println("Processing " + fileEntry.GetFileName());
+            log("Processing " + fileEntry.GetFileName(), debug);
 
             if (includedSize > maxFileSize) {
                 groupID++;
                 includedSize = 0;
 
-                System.out.println("Creating group " + groupID);
+                log("Creating group " + groupID, debug);
 
-                MoveGroup(group, output);
+                MoveGroup(group, output, groupID);
                 group.clear();
+                leftover.clear();
 
-                System.out.println("Created group " + groupID);
+                log("Created group " + groupID, debug);
 
             }
-            System.out.println("Processed " + fileEntry.GetFileName());
+            log("Processed " + fileEntry.GetFileName(), debug);
             group.add(fileEntry);
+            leftover.add(fileEntry);
 
         }
-        System.out.println("Finished zpping all files");
+        MoveGroup(leftover, output, groupID + 1);
+        log("Finished zipping all files", debug);
     }
 
     public static long GetGroupSize(ArrayList<File> group) {
@@ -69,11 +75,10 @@ public class Main {
         return size;
     }
 
-    public static void MoveGroup(ArrayList<File> group, String path) {
+    public static void MoveGroup(ArrayList<File> group, String path, int groupID) {
         try {
-            java.io.File outputFile = new java.io.File(path + ".zip");
+            java.io.File outputFile = new java.io.File(path + "/group-" + groupID + ".zip");
 
-            // Make sure the parent directory exists
             java.io.File parent = outputFile.getParentFile();
             if (parent != null) {
                 parent.mkdirs();
@@ -104,6 +109,12 @@ public class Main {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void log(String message, boolean debug) {
+        if (debug) {
+            System.out.println(message);
         }
     }
 }

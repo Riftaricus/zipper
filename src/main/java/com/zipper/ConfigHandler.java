@@ -16,6 +16,8 @@ public class ConfigHandler {
 
     private int maxFileSize;
 
+    private boolean debug;
+
     public ConfigHandler() {
         this.properties = GetProperties();
 
@@ -24,6 +26,8 @@ public class ConfigHandler {
         this.selectedOutputPath = GetStringProperty("output.path");
 
         this.maxFileSize = Integer.parseInt(GetStringProperty("zipper.max_file_size"));
+
+        this.debug = Boolean.parseBoolean(GetStringProperty("zipper.debug"));
     }
 
     public String GetStringProperty(String key) {
@@ -60,5 +64,9 @@ public class ConfigHandler {
 
     public int GetMaxFileSize() {
         return this.maxFileSize;
+    }
+
+    public boolean GetDebug() {
+        return this.debug;
     }
 }
